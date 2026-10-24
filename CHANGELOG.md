@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-24
+
 ### Added
 
 - One Stookwijzer device per house of Gladys located in the Netherlands: the
@@ -21,3 +23,6 @@ the notes of the version's GitHub Release.
 - Dashboard widget: the advice now and for the next blocks, wind and LKI.
 - Feature names, texts and documentation in English, French, German and
   Spanish.
+
+[Unreleased]: https://github.com/guim31/gladys-stookwijzer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-stookwijzer/releases/tag/v1.0.0
