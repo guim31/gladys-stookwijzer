@@ -62,7 +62,7 @@ lecture seule :
 | Fonctionnalité                   | Type             | Valeurs                    |
 | -------------------------------- | ---------------- | -------------------------- |
 | Avis actuel                      | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
-| Avis                             | Texte            | « Orange : Mieux vaut... » |
+| Avis                             | Texte            | « Orange — Mieux vaut... » |
 | Avis du prochain créneau         | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
 | Avis dans 2 créneaux             | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
 | Avis dans 3 créneaux             | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
@@ -77,7 +77,7 @@ d'après sont provisoires et peuvent encore changer jusqu'à 6 heures avant
 leur début.
 
 Les valeurs sont lues **une fois par heure**. Seules les valeurs qui changent
-partent vers Gladys, plus toutes toutes les 12 heures, pour que le tableau de
+partent vers Gladys, et toutes les 12 heures, pour que le tableau de
 bord n'affiche jamais « pas de valeur récente ».
 
 ## Widget de tableau de bord

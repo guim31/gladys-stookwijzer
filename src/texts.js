@@ -178,7 +178,8 @@ export function text(table, language, key, params = {}) {
   return typeof entry === 'function' ? entry(params) : entry;
 }
 
-/** "Orange: Better not to burn wood now", for the text feature. */
+/** "Orange — Better not to burn wood now", for the text feature. */
 export function adviceSentence(language, code) {
-  return `${text(CODE_NAMES, language, code)}: ${text(ADVICE, language, code)}`;
+  // A dash, not a colon: the French yellow advice already has one.
+  return `${text(CODE_NAMES, language, code)} — ${text(ADVICE, language, code)}`;
 }

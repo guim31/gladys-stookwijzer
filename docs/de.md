@@ -59,16 +59,16 @@ nächsten stündlichen Abfrage neu gelesen, oder sofort mit dem Knopf
 
 Jedes Gerät „Stookwijzer _Haus_“ hat acht Funktionen, alle nur lesbar:
 
-| Funktion                 | Typ                | Werte                     |
-| ------------------------ | ------------------ | ------------------------- |
-| Aktueller Rat            | Risikostufe        | 1 gelb, 2 orange, 3 rot   |
-| Rat                      | Text               | „Orange: Besser jetzt...“ |
-| Rat nächster Zeitblock   | Risikostufe        | 1 gelb, 2 orange, 3 rot   |
-| Rat in 2 Zeitblöcken     | Risikostufe        | 1 gelb, 2 orange, 3 rot   |
-| Rat in 3 Zeitblöcken     | Risikostufe        | 1 gelb, 2 orange, 3 rot   |
-| Windgeschwindigkeit      | Geschwindigkeit    | 0 bis 60 m/s              |
-| Windstärke (Beaufort)    | Geschwindigkeit    | 0 bis 12                  |
-| Luftqualitätsindex (LKI) | Luftqualitätsindex | 1 bis 11                  |
+| Funktion                 | Typ                | Werte                      |
+| ------------------------ | ------------------ | -------------------------- |
+| Aktueller Rat            | Risikostufe        | 1 gelb, 2 orange, 3 rot    |
+| Rat                      | Text               | „Orange — Besser jetzt...“ |
+| Rat nächster Zeitblock   | Risikostufe        | 1 gelb, 2 orange, 3 rot    |
+| Rat in 2 Zeitblöcken     | Risikostufe        | 1 gelb, 2 orange, 3 rot    |
+| Rat in 3 Zeitblöcken     | Risikostufe        | 1 gelb, 2 orange, 3 rot    |
+| Windgeschwindigkeit      | Geschwindigkeit    | 0 bis 60 m/s               |
+| Windstärke (Beaufort)    | Geschwindigkeit    | 0 bis 12                   |
+| Luftqualitätsindex (LKI) | Luftqualitätsindex | 1 bis 11                   |
 
 Gladys beschriftet die Risikostufen mit „Niedrig“, „Mittel“ und „Hoch“: Diese
 stehen für Gelb, Orange und Rot. „Kein Risiko“ (0) wird nie verwendet. Der
@@ -97,7 +97,7 @@ Im Szeneneditor, unter der Integration:
   wird rot.
 - **Stookwijzer: Code Rot ist vorbei**: Der aktuelle Rat ist wieder gelb oder
   orange. Mit dem Filter „Neuer Rat“ kannst du nur einen der beiden behalten.
-- **Stookwijzer: Code Rot für den nächsten Zeitblock**: Der nächste Block ist
+- **Stookwijzer: Code Rot im nächsten Zeitblock angekündigt**: Der nächste Block ist
   sicher rot (endgültiger Rat), obwohl er jetzt nicht rot ist. Einmal pro
   Block, etwa 6 Stunden vorher.
 
@@ -112,8 +112,7 @@ in Gladys hinzugefügt sein, damit seine Auslöser feuern.
 
 ## Szenenbeispiele
 
-- **Vor dem Anheizen warnen**: Auslöser „Code Rot für den nächsten
-  Zeitblock“, Aktion „Nachricht senden“: „Code Rot ab
+- **Vor dem Anheizen warnen**: Auslöser „Code Rot im nächsten Zeitblock angekündigt“, Aktion „Nachricht senden“: „Code Rot ab
   {{triggerEvent.data.starts_at}}: Verbrenne kein Holz.“
 - **Erinnerung am Abend**: um 18:00, wenn „Aktueller Rat“ des Hauses 3 (Hoch)
   ist, sende „Stookwijzer: Heize heute Abend nicht mit Holz.“

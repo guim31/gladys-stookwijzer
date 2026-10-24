@@ -54,16 +54,16 @@ reading, or right away with the **Scan** button of the Discover tab.
 
 Each "Stookwijzer _house_" device has eight features, all read-only:
 
-| Feature                 | Type              | Values                     |
-| ----------------------- | ----------------- | -------------------------- |
-| Current advice          | Risk level        | 1 yellow, 2 orange, 3 red  |
-| Advice                  | Text              | "Orange: Better not to..." |
-| Next block advice       | Risk level        | 1 yellow, 2 orange, 3 red  |
-| Advice in 2 blocks      | Risk level        | 1 yellow, 2 orange, 3 red  |
-| Advice in 3 blocks      | Risk level        | 1 yellow, 2 orange, 3 red  |
-| Wind speed              | Speed (m/s)       | 0 to 60                    |
-| Wind force (Beaufort)   | Speed             | 0 to 12                    |
-| Air quality index (LKI) | Air quality index | 1 to 11                    |
+| Feature                 | Type              | Values                    |
+| ----------------------- | ----------------- | ------------------------- |
+| Current advice          | Risk level        | 1 yellow, 2 orange, 3 red |
+| Advice                  | Text              | "Orange — Better not..."  |
+| Next block advice       | Risk level        | 1 yellow, 2 orange, 3 red |
+| Advice in 2 blocks      | Risk level        | 1 yellow, 2 orange, 3 red |
+| Advice in 3 blocks      | Risk level        | 1 yellow, 2 orange, 3 red |
+| Wind speed              | Speed (m/s)       | 0 to 60                   |
+| Wind force (Beaufort)   | Speed             | 0 to 12                   |
+| Air quality index (LKI) | Air quality index | 1 to 11                   |
 
 Gladys labels the risk levels "Low", "Medium" and "High": they stand for
 yellow, orange and red. "No risk" (0) is never used. The advice of the

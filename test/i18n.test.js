@@ -163,7 +163,7 @@ test('the advice sentence fits a text feature and a scene variable', () => {
     for (const code of ['yellow', 'orange', 'red']) {
       const sentence = adviceSentence(lang, code);
       assert.ok(sentence.length <= 100, sentence);
-      assert.ok(sentence.startsWith(`${CODE_NAMES[lang][code]}: `), sentence);
+      assert.ok(sentence.startsWith(`${CODE_NAMES[lang][code]} — `), sentence);
     }
   }
 });

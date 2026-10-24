@@ -60,7 +60,7 @@ export function registerHandlers(gladys, options = {}) {
   });
 
   // A scan reads the houses again (a location added in Gladys) and the advice.
-  gladys.onScanRequest(whenReady(() => monitor.refresh()));
+  gladys.onScanRequest(whenReady(() => monitor.freshRefresh()));
 
   // Devices are published with should_poll: false (refreshed by the monitor's
   // own timer); this only serves a Gladys that would poll anyway.

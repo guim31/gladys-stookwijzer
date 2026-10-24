@@ -34,6 +34,11 @@ export const DEFAULT_TIMINGS = {
   retryMs: 10 * 60 * 1000,
   // Re-send unchanged values, so Gladys never shows "no recent value".
   heartbeatMs: 12 * 60 * 60 * 1000,
+  // Read a little after a block boundary, once the layer has moved on.
+  boundaryMarginMs: 2 * 60 * 1000,
+  // A reading older than this is not shown any more (the service is down):
+  // Gladys then says "no recent value" instead of a frozen advice.
+  maxAgeMs: 24 * 60 * 60 * 1000,
 };
 
 export class Monitor {
@@ -81,8 +86,10 @@ export class Monitor {
   /** Gladys came back: everything it may have lost is published again. */
   async resync(config) {
     this.config = config;
+    // The core keeps the connection status in memory only: send it again.
+    this.lastStatus = undefined;
     this.gladys.forgetPublishedStates();
-    await this.refresh();
+    await this.freshRefresh();
   }
 
   async reconfigure(config) {
@@ -124,7 +131,46 @@ export class Monitor {
     return this.running;
   }
 
+  /**
+   * A refresh that starts after this call (a scan, a reconnection): one in
+   * progress may have read the houses or published before the request.
+   */
+  async freshRefresh() {
+    if (this.running) {
+      await this.running.catch(() => {});
+    }
+    return this.refresh();
+  }
+
   async doRefresh() {
+    let failed = false;
+    try {
+      failed = await this.readAndPublish();
+    } finally {
+      // Whatever happened, the next reading stays scheduled.
+      this.schedule(failed ? this.timings.retryMs : this.nextDelay());
+    }
+  }
+
+  /**
+   * Milliseconds to the next reading: an hour, or just after the next block
+   * boundary (04/10/16/22 Dutch time) when it comes sooner, so the current
+   * advice and the triggers change with the block.
+   */
+  nextDelay() {
+    const now = this.now().getTime();
+    let delay = this.timings.refreshMs;
+    for (const reading of this.readings.values()) {
+      const end = reading.advice?.blocks.find((block) => block.end.getTime() > now)?.end;
+      if (end) {
+        delay = Math.min(delay, end.getTime() - now + this.timings.boundaryMarginMs);
+      }
+    }
+    return Math.max(delay, this.timings.boundaryMarginMs);
+  }
+
+  /** One reading of every house; resolves true when a house failed. */
+  async readAndPublish() {
     this.lastRefreshAt = this.now().getTime();
     await this.loadHouses();
     let tried = 0;
@@ -157,12 +203,11 @@ export class Monitor {
     await this.publishDiscovered();
     await this.publishStates();
     await this.fireTriggers();
-    const failed = failures > 0;
     await this.publishStatus(tried > 0 && failures === tried);
     await this.store.save(this.data);
     this.nudgeWidget();
     logger.debug(`Refreshed ${this.houses.length} house(s)`);
-    this.schedule(failed ? this.timings.retryMs : this.timings.refreshMs);
+    return failures > 0;
   }
 
   async loadHouses() {
@@ -210,13 +255,16 @@ export class Monitor {
     if (!reading?.advice) {
       return reading?.outside ? { outside: true } : null;
     }
+    if (this.now().getTime() - reading.at > this.timings.maxAgeMs) {
+      return null;
+    }
     const blocks = upcomingBlocks(reading.advice, this.now());
     return { advice: reading.advice, blocks, at: reading.at };
   }
 
   statesFor(house) {
     const view = this.view(house.selector);
-    if (!view?.advice) {
+    if (!view?.advice || view.blocks.length === 0) {
       return [];
     }
     return statesOf(
@@ -280,21 +328,30 @@ export class Monitor {
           events.push([TRIGGERS.RED_ANNOUNCED, next]);
         }
       }
-      this.data.houses[house.selector] = {
+      const reference = {
         code: current.code,
         announced: announcedFor ?? before?.announced ?? null,
       };
-      if (!this.isCreated(ids.device)) {
-        continue;
-      }
-      for (const [key, block] of events) {
-        try {
-          await this.gladys.publishSceneEvent(key, this.eventData(key, ids, view.advice, block));
-          logger.info(`${house.name}: ${key}`);
-        } catch (err) {
-          logger.warn(`Cannot fire ${key} for "${house.name}": ${err.message}`);
+      if (this.isCreated(ids.device)) {
+        for (const [key, block] of events) {
+          const failure = `event:${house.selector}:${key}`;
+          try {
+            await this.gladys.publishSceneEvent(key, this.eventData(key, ids, view.advice, block));
+            this.recovered(failure, `${house.name}: ${key} fired at last`);
+            logger.info(`${house.name}: ${key}`);
+          } catch (err) {
+            // Keep the previous reference: the transition is seen, and the
+            // event sent, again at the next reading.
+            if (key === TRIGGERS.RED_ANNOUNCED) {
+              reference.announced = before.announced;
+            } else {
+              reference.code = before.code;
+            }
+            this.failed(failure, `Cannot fire ${key} for "${house.name}": ${err.message}`);
+          }
         }
       }
+      this.data.houses[house.selector] = reference;
     }
   }
 

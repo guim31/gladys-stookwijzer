@@ -61,7 +61,7 @@ lectura:
 | Función                          | Tipo             | Valores                       |
 | -------------------------------- | ---------------- | ----------------------------- |
 | Consejo actual                   | Nivel de riesgo  | 1 amarillo, 2 naranja, 3 rojo |
-| Consejo                          | Texto            | «Naranja: Mejor no...»        |
+| Consejo                          | Texto            | «Naranja — Mejor no...»       |
 | Consejo próxima franja           | Nivel de riesgo  | 1 amarillo, 2 naranja, 3 rojo |
 | Consejo en 2 franjas             | Nivel de riesgo  | 1 amarillo, 2 naranja, 3 rojo |
 | Consejo en 3 franjas             | Nivel de riesgo  | 1 amarillo, 2 naranja, 3 rojo |

@@ -35,7 +35,7 @@ test('states only for created devices, all of them on creation', async (t) => {
   assert.equal(world.fake.lastState(id.advice), 1, 'yellow = 1');
   assert.equal(
     world.fake.lastState(id.adviceText),
-    'Yellow: Caution: burning wood causes nuisance and air pollution',
+    'Yellow — Caution: burning wood causes nuisance and air pollution',
   );
   assert.equal(world.fake.lastState(id.next1), 1);
   assert.equal(world.fake.lastState(id.next3), 1);
@@ -92,7 +92,7 @@ test('triggers: code red, end of code red, red announced; never on the first rea
   );
   assert.deepEqual(events[0].data, {
     house: device.external_id,
-    advice_text: 'Red: Do not burn wood',
+    advice_text: 'Red — Do not burn wood',
     starts_at: '10:00',
     ends_at: '16:00',
     postcode: '1012',
@@ -115,24 +115,96 @@ test('a provisional red block is not announced', async (t) => {
 test('a restart neither fires again nor misses a change', async (t) => {
   const store = new MemoryStore();
   const first = await createWorld({ store });
-  await create(first, HOUSES.amsterdam);
+  const device = await create(first, HOUSES.amsterdam);
   first.rivm.set('amsterdam', { advies_0: 2 });
-  await cycle(first);
-  assert.equal(first.fake.sceneEvents.length, 1);
+  await cycle(first, 10);
+  assert.deepEqual(
+    first.fake.sceneEvents.map((event) => event.key),
+    [TRIGGERS.RED],
+  );
   await first.app.stop();
 
-  // Same advice after the restart: nothing fires.
-  const second = await createWorld({ store, rivm: first.rivm, houses: [HOUSES.amsterdam] });
-  t.after(() => second.app.stop());
-  await create(second, HOUSES.amsterdam);
-  assert.deepEqual(second.fake.sceneEvents, []);
-  // Changed while it was down: fired at the first reading.
-  second.rivm.set('amsterdam', { advies_0: 0 });
-  await cycle(second);
+  // Same advice after the restart, device already created: nothing fires.
+  const same = await createWorld({ store, rivm: first.rivm, devices: [device] });
+  t.after(() => same.app.stop());
+  assert.deepEqual(same.fake.sceneEvents, []);
+  await same.app.stop();
+
+  // Changed while it was down: fired at the very first reading.
+  first.rivm.set('amsterdam', { advies_0: 0 });
+  const changed = await createWorld({ store, rivm: first.rivm, devices: [device] });
+  t.after(() => changed.app.stop());
   assert.deepEqual(
-    second.fake.sceneEvents.map((event) => event.key),
+    changed.fake.sceneEvents.map((event) => event.key),
     [TRIGGERS.RED_OVER],
   );
+});
+
+test('the very first reading of a house fires nothing, even already red', async (t) => {
+  const seed = await createWorld();
+  const device = seed.fake.discoveredDevices[0];
+  await seed.app.stop();
+  seed.rivm.set('amsterdam', { advies_0: 2, advies_6: 2 });
+  const world = await createWorld({ rivm: seed.rivm, devices: [device] });
+  t.after(() => world.app.stop());
+  assert.deepEqual(world.fake.sceneEvents, []);
+  assert.equal(world.store.saved.houses.grachtenhuis.code, 2, 'the reference is set');
+});
+
+test('a trigger Gladys refused is sent again at the next reading', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  await create(world, HOUSES.amsterdam);
+  const original = world.gladys.publishSceneEvent.bind(world.gladys);
+  let refuse = true;
+  t.mock.method(world.gladys, 'publishSceneEvent', async (...args) => {
+    if (refuse) {
+      throw new Error('HTTP 429');
+    }
+    return original(...args);
+  });
+  world.rivm.set('amsterdam', { advies_0: 2 });
+  await cycle(world, 10);
+  assert.deepEqual(world.fake.sceneEvents, []);
+  refuse = false;
+  await cycle(world, 10);
+  assert.deepEqual(
+    world.fake.sceneEvents.map((event) => event.key),
+    [TRIGGERS.RED],
+  );
+  await cycle(world, 10);
+  assert.equal(world.fake.sceneEvents.length, 1, 'once only');
+});
+
+test('the next reading comes just after the next block boundary', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  // 06:20 Dutch time: the 10:00 boundary is far, an hour.
+  assert.equal(world.monitor.nextDelay(), 60 * 60 * 1000);
+  // 09:30 Dutch time: 30 minutes to 10:00, plus 2 minutes of margin.
+  world.clock.advance(190);
+  assert.equal(world.monitor.nextDelay(), 32 * 60 * 1000);
+});
+
+test('a reading older than a day is not published any more', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  await create(world, HOUSES.amsterdam);
+  world.rivm.failure = 503;
+  world.clock.advance(25 * 60);
+  const count = world.fake.states.length;
+  await cycle(world, 10);
+  assert.equal(world.fake.states.length, count, 'no heartbeat on stale values');
+});
+
+test('the connection status is sent again after Gladys restarted', async (t) => {
+  const world = await createWorld({ houses: [HOUSES.paris] });
+  t.after(() => world.app.stop());
+  const count = world.fake.connectionStatuses.length;
+  await world.gladys.disconnect();
+  await world.gladys.connect();
+  assert.equal(world.fake.connectionStatuses.length, count + 1);
+  assert.equal(world.fake.connectionStatus.connected, false);
 });
 
 test('the next block becomes current when the layer lags', async (t) => {
@@ -185,11 +257,14 @@ test('the language change rewrites the advice text', async (t) => {
   t.after(() => world.app.stop());
   await create(world, HOUSES.amsterdam);
   await world.fake.configUpdated({ language: 'de' });
-  assert.match(world.fake.lastState(ids(world, HOUSES.amsterdam).adviceText), /^Gelb: /);
+  assert.match(world.fake.lastState(ids(world, HOUSES.amsterdam).adviceText), /^Gelb — /);
 });
 
 test('the internal timer refreshes without any poll from Gladys', async (t) => {
-  const world = await createWorld({ timers: true, timings: { refreshMs: 30, retryMs: 30 } });
+  const world = await createWorld({
+    timers: true,
+    timings: { refreshMs: 30, retryMs: 30, boundaryMarginMs: 10 },
+  });
   t.after(() => world.app.stop());
   await create(world, HOUSES.amsterdam);
   const before = world.rivm.requests.length;

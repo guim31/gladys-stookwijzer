@@ -11,6 +11,8 @@ import { toRdNew } from '../../src/rd.js';
 
 // Quiet test output; captureLogs() raises the level where a test reads the logs.
 process.env.LOG_LEVEL ??= 'silent';
+// Hours of the blocks are shown in the TZ of Gladys: pin it, whatever the machine.
+process.env.TZ = 'Europe/Amsterdam';
 
 const fixture = async (name) =>
   JSON.parse(await readFile(new URL(`../fixtures/rivm/${name}.json`, import.meta.url), 'utf8'));
@@ -69,7 +71,13 @@ export class FakeRivm {
       return new Response('Service Unavailable', { status: this.failure });
     }
     if (this.failure === 'xml') {
-      return new Response('<?xml version="1.0"?><ows:ExceptionReport/>', { status: 200 });
+      // The real exception of GeoServer (recorded with an unknown layer), with a 200.
+      return new Response(
+        await readFile(new URL('../fixtures/rivm/exception.xml', import.meta.url)),
+        {
+          status: 200,
+        },
+      );
     }
     const place = this.placeOf(url);
     const body = structuredClone(this.answers[place]);
@@ -129,6 +137,8 @@ export async function createWorld(options = {}) {
   const gladys = createFakeGladys({
     config: { language: 'en', ...options.config },
     houses: options.houses ?? [HOUSES.amsterdam],
+    // Devices already created in Gladys before the integration starts.
+    devices: options.devices ?? [],
   });
   const store = options.store ?? new MemoryStore();
   const app = registerHandlers(gladys, {
