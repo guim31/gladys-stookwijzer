@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "stookwijzer_v2.1138",
+      "geometry": null,
+      "properties": {
+        "pc4": "3512",
+        "model_runtime": "24-10-2026 04:00",
+        "lki": 1,
+        "wind": 7.7,
+        "wind_bft": 4,
+        "advies_0": 0,
+        "advies_6": 0,
+        "advies_12": 0,
+        "advies_18": 0,
+        "definitief_0": true,
+        "definitief_6": true,
+        "definitief_12": false,
+        "definitief_18": false
+      }
+    }
+  ],
+  "totalFeatures": 1,
+  "numberMatched": 1,
+  "numberReturned": 1,
+  "timeStamp": "2026-10-24T04:19:27.502Z",
+  "crs": null
+}

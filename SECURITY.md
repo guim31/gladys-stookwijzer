@@ -30,6 +30,18 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+What the integration handles:
+
+- The location of your houses, read from Gladys (manifest `location: true`).
+  It is converted to Dutch grid coordinates and sent, rounded to the metre, to
+  the RIVM open geo service (`data.rivm.nl`, HTTPS) to find the postcode area.
+  It is never logged nor stored.
+- `/data/stookwijzer.json`: the last advice code of each house (keyed by the
+  house selector), so that a restart does not fire a trigger again. No secret:
+  the service needs no account and no key.
+- Network: outgoing HTTPS to `data.rivm.nl` only, and the connection to
+  Gladys.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and the RIVM service the integration reads.

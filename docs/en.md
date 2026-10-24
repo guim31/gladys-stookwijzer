@@ -1,61 +1,146 @@
-# Demo Devices Template
+# Stookwijzer
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+The **Stookwijzer** of the RIVM (the Dutch National Institute for Public Health
+and the Environment) tells, for each 4-digit postcode area of the Netherlands,
+whether lighting a wood stove, a fireplace, a patio heater or a fire pit now
+bothers the neighbourhood. This integration brings that advice into Gladys for
+each of your houses: a device with the current advice and the next blocks, the
+wind and the air quality index, a dashboard widget and scene triggers.
+
+> The Stookwijzer only covers the **Netherlands**. Outside, the integration has
+> nothing to show and says so. It is not affiliated with the RIVM.
 
 ## What you get
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+- One **Stookwijzer** device per house of Gladys located in the Netherlands.
+- The **advice** in three codes, as the RIVM gives them:
+  - **Yellow**: "Caution: burning wood causes nuisance and air pollution"
+    (wind force 3 or more and LKI 3 or less);
+  - **Orange**: "Better not to burn wood now" (wind force 3 or more and LKI 4,
+    5 or 6);
+  - **Red**: "Do not burn wood" (wind force 2 or less, or LKI 7 or more).
+- The advice of the **next three 6-hour blocks** (04:00-10:00, 10:00-16:00,
+  16:00-22:00 and 22:00-04:00, Dutch time).
+- The **wind speed** (m/s), the **wind force** (Beaufort) and the **air quality
+  index** (LKI, 1 to 11) the advice is based on.
+- A **dashboard widget** and three **scene triggers**.
+
+There is no code green: not burning wood is always the best advice for a
+healthy environment, so the RIVM deliberately left it out.
+
+## Requirements
+
+- Gladys Assistant 5.1 or later.
+- A house with a **location** in Gladys (Settings, Houses, the map of the
+  house), in the Netherlands. The integration asks for access to the location
+  of your houses when you install it: it is only used to find the postcode
+  area, and only the converted point is sent to the RIVM.
+- Internet access from Gladys to `data.rivm.nl`. No account, no key.
 
 ## Configuration
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+1. Install the integration and accept the access to the location of your
+   houses.
+2. In **Configuration**, pick the **language** of the feature names, of the
+   advice text and of the scene variables (French by default). The feature
+   names are set when the device is created: choose the language first.
+3. Open the **Discover** tab: one "Stookwijzer _house_" device appears for
+   each house located in the Netherlands. Add it to Gladys.
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+A location added or changed later in Gladys is read again at the next hourly
+reading, or right away with the **Scan** button of the Discover tab.
 
-## Actions
+## Devices
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+Each "Stookwijzer _house_" device has eight features, all read-only:
 
-## Scenes
+| Feature                 | Type              | Values                     |
+| ----------------------- | ----------------- | -------------------------- |
+| Current advice          | Risk level        | 1 yellow, 2 orange, 3 red  |
+| Advice                  | Text              | "Orange: Better not to..." |
+| Next block advice       | Risk level        | 1 yellow, 2 orange, 3 red  |
+| Advice in 2 blocks      | Risk level        | 1 yellow, 2 orange, 3 red  |
+| Advice in 3 blocks      | Risk level        | 1 yellow, 2 orange, 3 red  |
+| Wind speed              | Speed (m/s)       | 0 to 60                    |
+| Wind force (Beaufort)   | Speed             | 0 to 12                    |
+| Air quality index (LKI) | Air quality index | 1 to 11                    |
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+Gladys labels the risk levels "Low", "Medium" and "High": they stand for
+yellow, orange and red. "No risk" (0) is never used. The advice of the
+current block and of the next one is **final**; the two after are
+provisional and may still change until 6 hours before they start.
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+The values are read **once an hour**. Only the values that changed are sent to
+Gladys, plus all of them every 12 hours so that the dashboard never shows "no
+recent value".
 
-## Dashboard
+## Dashboard widget
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+Add the **Stookwijzer** widget to a dashboard. It shows the advice of the
+current block in words, the wind force and the LKI as live tiles, a list of
+the current and next three blocks with their colour (the provisional ones are
+marked), the postcode area, and a button to the official Stookwijzer page. In
+its settings, pick the house; left empty, the first Stookwijzer device is
+shown.
+
+## Scene triggers
+
+In the scene editor, under the integration:
+
+- **Stookwijzer: code red (do not burn wood)**: the current advice of the
+  house turns red.
+- **Stookwijzer: code red is over**: the current advice is yellow or orange
+  again. You can keep only one of the two with the "New advice" filter.
+- **Stookwijzer: code red announced for the next block**: the next block is
+  red for certain (final advice) while it is not red now. Fired once per
+  block, about 6 hours ahead.
+
+Each trigger can be limited to one house. The following actions can use
+`{{triggerEvent.data.advice_text}}`, `starts_at` and `ends_at` (the hours of
+the block, in the time zone of Gladys), `postcode`, `wind_force` and `lki`.
+
+A trigger never fires on the very first reading of a house, nor again after a
+restart of the integration for the same advice. A device must be added to
+Gladys for its triggers to fire.
+
+## Scene examples
+
+- **Warn before lighting the stove**: trigger "code red announced for the next
+  block", action "Send a message": "Code red from {{triggerEvent.data.starts_at}}:
+  do not burn wood."
+- **Stove reminder in the evening**: at 18:00, if "Current advice" of the house
+  is 3 (High), send "Stookwijzer: do not light the stove tonight."
+- **Back to normal**: trigger "code red is over", filter "Yellow", turn off the
+  red light strip that showed the alert.
+
+## Data sources and quotas
+
+The advice comes from the open geo service of the RIVM (`data.rivm.nl/geo/alo`,
+layer `stookwijzer_v2`), the same data as the Stookwijzer page of the Atlas
+Leefomgeving. The integration asks once an hour per house, which is what the
+Stookwijzer needs: the advice changes per 6-hour block. The wind and the LKI
+are model calculations (KNMI, RIVM) averaged per block: they may differ from
+the measurements and the wind at your house.
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **No device in Discover**: give your house a location in Gladys, in the
+  Netherlands, then press **Scan**. The status of the Configuration screen
+  says why: no located house, or houses outside the Netherlands.
+- **"The RIVM geo service does not answer"**: the last advice stays shown;
+  the integration tries again every 10 minutes.
+- **The feature names are in the wrong language**: they are set when the
+  device is created. Change the language, delete the device and add it again
+  (its history is lost).
+- For the details, set `LOG_LEVEL=debug` and read the logs of the integration.
+
+## Limits
+
+- Netherlands only; the advice is that of the 4-digit postcode area of the
+  house.
+- Developed and tested with the real RIVM data, but without an orange or red
+  advice on the day of development: those cases are tested on modified
+  recordings. Feedback welcome.
+- The Stookwijzer is an advice. Some municipalities forbid burning wood under
+  code orange or red: check your local rules.
+- Not affiliated with the RIVM.

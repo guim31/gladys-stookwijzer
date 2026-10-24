@@ -31,16 +31,20 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only (handlers registered in src/app.js)
+src/app.js                        registers every SDK handler on the monitor and the widget
+src/monitor.js                    houses, hourly refresh, states, scene triggers, status
+src/api.js                        RIVM geo service client (WFS) and parsing of the advice
+src/rd.js                         WGS84 -> RD New (EPSG:28992) conversion
+src/time.js                       Dutch wall-clock time of the blocks, hours in the TZ of Gladys
+src/devices.js                    Gladys device of a house and its states
+src/widgets.js                    dashboard widget `stookwijzer`
+src/texts.js                      texts sent from the container, four languages
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
-gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+src/store.js                      /data persistence (last advice per house)
+gladys-assistant-integration.json manifest: config_schema, scene triggers, widget
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, against the SDK's fake Gladys and recorded answers
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +74,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** is in four languages (English, French, German with
+  "du", Spanish with "usted"): manifest texts, widget texts, feature names,
+  status messages, and `docs/{en,fr,de,es}.md`, kept in sync
+  (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +239,31 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Stookwijzer (propre à cette intégration)
+
+- Source : service géographique ouvert du RIVM, **sans clé**. Requête par maison :
+  `https://data.rivm.nl/geo/alo/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=stookwijzer_v2&outputFormat=application/json&propertyName=…&CQL_FILTER=INTERSECTS(shape,POINT(x y))`
+  en RD New (EPSG:28992). La bibliothèque HA (`stookwijzer` 1.6.1) passe par un `GetFeatureInfo` WMS
+  avec une `servicekey` : **inutile** (vérifié le 24/10/2026), et le WFS avec `propertyName` évite
+  la géométrie du polygone (quelques Ko).
+- Réponse : une entité par code postal à 4 chiffres (`pc4`), ~4 070 zones. `advies_0/6/12/18` :
+  0 jaune, 1 orange, 2 rouge ; `definitief_N` : avis figé (bloc courant et suivant). `lki` 1-11,
+  `wind` m/s, `wind_bft`. `windrichting` vaut -1 (non utilisé). Hors zone (mer, étranger) :
+  `features: []`, avec un 200. Un attribut inconnu dans le filtre CQL renvoie aussi `[]` sans erreur.
+  Une erreur WFS (mauvaise couche) : XML `ows:ExceptionReport`.
+- **`model_runtime` est l'heure néerlandaise de début du bloc courant** (« 24-10-2026 04:00 » lu à
+  06:15 heure d'été), pas de l'UTC (la bibliothèque HA l'interprète en heure du système). Blocs
+  fixes 04-10, 10-16, 16-22, 22-04 **en heure murale** : la nuit du changement d'heure, le bloc
+  22-04 dure 5 ou 7 h, d'où `dutchTime()` plutôt que `+6 h`.
+- Si la couche n'est pas encore rafraîchie, `upcomingBlocks()` écarte les blocs finis : le bloc
+  `advies_6` devient le courant.
+- Avis publié en `risk/integer` : jaune 1, orange 2, rouge 3 (libellés Gladys Faible/Moyen/Élevé),
+  0 jamais utilisé. Beaufort en `speed-sensor/integer` **sans unité** (aucune unité Beaufort côté
+  cœur), LKI en `airquality-sensor/aqi`.
+- Identifiant d'appareil : `selector` de la maison Gladys. Déclencheurs seulement pour les appareils
+  créés, jamais à la première lecture d'une maison ; dernier code et dernier bloc rouge annoncé dans
+  `/data/stookwijzer.json`.
+- `requestWidgetRefresh` du SDK est **synchrone** (`void`) : pas de `.catch()` dessus.
+- Fixtures enregistrées le 24/10/2026 vers 06 h 20 (heure néerlandaise) : tout le pays était jaune
+  (vent 4-5 Bft) ; orange et rouge sont testés en modifiant ces réponses (`FakeRivm.set`).

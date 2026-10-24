@@ -1,67 +1,155 @@
-# Template de démonstration
+# Stookwijzer
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Le **Stookwijzer** du RIVM (l'institut national néerlandais de la santé
+publique et de l'environnement) indique, pour chaque code postal à 4 chiffres
+des Pays-Bas, si allumer un poêle à bois, une cheminée, un chauffage de
+terrasse ou un brasero gêne maintenant le voisinage. Cette intégration amène
+cet avis dans Gladys pour chacune de vos maisons : un appareil avec l'avis
+actuel et celui des prochains créneaux, le vent et l'indice de qualité de
+l'air, un widget de tableau de bord et des déclencheurs de scène.
+
+> Le Stookwijzer ne couvre que les **Pays-Bas**. Ailleurs, l'intégration n'a
+> rien à montrer et le dit. Elle n'est pas affiliée au RIVM.
 
 ## Ce que vous obtenez
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+- Un appareil **Stookwijzer** par maison de Gladys située aux Pays-Bas.
+- L'**avis** en trois codes, tels que le RIVM les donne :
+  - **Jaune** : « Attention : faire du feu de bois gêne et pollue l'air »
+    (vent de force 3 ou plus et LKI de 3 ou moins) ;
+  - **Orange** : « Mieux vaut ne pas faire de feu de bois maintenant » (vent
+    de force 3 ou plus et LKI de 4, 5 ou 6) ;
+  - **Rouge** : « Ne faites pas de feu de bois » (vent de force 2 ou moins, ou
+    LKI de 7 ou plus).
+- L'avis des **trois prochains créneaux de 6 heures** (04:00-10:00,
+  10:00-16:00, 16:00-22:00 et 22:00-04:00, heure néerlandaise).
+- La **vitesse du vent** (m/s), la **force du vent** (Beaufort) et l'**indice
+  de qualité de l'air** (LKI, de 1 à 11) sur lesquels l'avis repose.
+- Un **widget** de tableau de bord et trois **déclencheurs de scène**.
+
+Il n'y a pas de code vert : ne pas faire de feu de bois reste toujours le
+meilleur avis pour un environnement sain, le RIVM l'a donc volontairement
+écarté.
+
+## Prérequis
+
+- Gladys Assistant 5.1 ou plus récent.
+- Une maison avec une **position** dans Gladys (Paramètres, Maisons, la carte
+  de la maison), aux Pays-Bas. L'intégration demande l'accès à la position de
+  vos maisons à l'installation : elle ne sert qu'à trouver le code postal, et
+  seul le point converti part vers le RIVM.
+- Un accès Internet de Gladys vers `data.rivm.nl`. Ni compte, ni clé.
 
 ## Configuration
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+1. Installez l'intégration et acceptez l'accès à la position de vos maisons.
+2. Dans **Configuration**, choisissez la **langue** des noms de
+   fonctionnalités, du texte de l'avis et des variables de scène (français
+   par défaut). Les noms sont fixés à la création de l'appareil : choisissez
+   la langue d'abord.
+3. Ouvrez l'onglet **Découverte** : un appareil « Stookwijzer _maison_ »
+   apparaît pour chaque maison située aux Pays-Bas. Ajoutez-le à Gladys.
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+Une position ajoutée ou modifiée ensuite dans Gladys est relue à la lecture
+horaire suivante, ou tout de suite avec le bouton **Scanner** de l'onglet
+Découverte.
 
-## Actions
+## Appareils
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+Chaque appareil « Stookwijzer _maison_ » a huit fonctionnalités, toutes en
+lecture seule :
 
-## Scènes
+| Fonctionnalité                   | Type             | Valeurs                    |
+| -------------------------------- | ---------------- | -------------------------- |
+| Avis actuel                      | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
+| Avis                             | Texte            | « Orange : Mieux vaut... » |
+| Avis du prochain créneau         | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
+| Avis dans 2 créneaux             | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
+| Avis dans 3 créneaux             | Niveau de risque | 1 jaune, 2 orange, 3 rouge |
+| Vitesse du vent                  | Vitesse (m/s)    | 0 à 60                     |
+| Force du vent (Beaufort)         | Vitesse          | 0 à 12                     |
+| Indice de qualité de l'air (LKI) | Qualité de l'air | 1 à 11                     |
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+Gladys affiche les niveaux de risque « Faible », « Moyen » et « Élevé » : ils
+valent jaune, orange et rouge. « Pas de risque » (0) n'est jamais utilisé.
+L'avis du créneau en cours et celui du suivant sont **définitifs** ; les deux
+d'après sont provisoires et peuvent encore changer jusqu'à 6 heures avant
+leur début.
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+Les valeurs sont lues **une fois par heure**. Seules les valeurs qui changent
+partent vers Gladys, plus toutes toutes les 12 heures, pour que le tableau de
+bord n'affiche jamais « pas de valeur récente ».
 
-## Tableau de bord
+## Widget de tableau de bord
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+Ajoutez le widget **Stookwijzer** à un tableau de bord. Il montre l'avis du
+créneau en cours en toutes lettres, la force du vent et le LKI en tuiles en
+direct, la liste du créneau en cours et des trois suivants avec leur couleur
+(les provisoires sont signalés), le code postal, et un bouton vers la page
+officielle du Stookwijzer. Dans ses réglages, choisissez la maison ; laissé
+vide, le premier appareil Stookwijzer est affiché.
+
+## Déclencheurs de scène
+
+Dans l'éditeur de scènes, sous l'intégration :
+
+- **Stookwijzer : code rouge (pas de feu de bois)** : l'avis actuel de la
+  maison passe au rouge.
+- **Stookwijzer : fin du code rouge** : l'avis actuel redevient jaune ou
+  orange. Le filtre « Nouvel avis » permet de n'en garder qu'un.
+- **Stookwijzer : code rouge annoncé au prochain créneau** : le prochain
+  créneau est rouge à coup sûr (avis définitif), alors qu'il ne l'est pas
+  maintenant. Une fois par créneau, environ 6 heures à l'avance.
+
+Chaque déclencheur peut se limiter à une maison. Les actions suivantes
+peuvent utiliser `{{triggerEvent.data.advice_text}}`, `starts_at` et `ends_at`
+(les heures du créneau, dans le fuseau de Gladys), `postcode`, `wind_force`
+et `lki`.
+
+Un déclencheur ne part jamais à la toute première lecture d'une maison, ni de
+nouveau après un redémarrage de l'intégration pour le même avis. L'appareil
+doit être ajouté à Gladys pour que ses déclencheurs partent.
+
+## Exemples de scènes
+
+- **Prévenir avant d'allumer le poêle** : déclencheur « code rouge annoncé au
+  prochain créneau », action « Envoyer un message » : « Code rouge à partir de
+  {{triggerEvent.data.starts_at}} : pas de feu de bois. »
+- **Rappel du soir** : à 18:00, si « Avis actuel » de la maison vaut 3
+  (Élevé), envoyer « Stookwijzer : n'allumez pas le poêle ce soir. »
+- **Retour à la normale** : déclencheur « fin du code rouge », filtre
+  « Jaune », éteindre le ruban lumineux rouge qui signalait l'alerte.
+
+## Sources des données et quotas
+
+L'avis vient du service géographique ouvert du RIVM (`data.rivm.nl/geo/alo`,
+couche `stookwijzer_v2`), les mêmes données que la page Stookwijzer de l'Atlas
+Leefomgeving. L'intégration interroge une fois par heure et par maison, ce
+qui suffit : l'avis change par créneau de 6 heures. Le vent et le LKI sont
+des calculs de modèle (KNMI, RIVM) moyennés par créneau : ils peuvent
+différer des mesures et du vent chez vous.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **Aucun appareil dans Découverte** : donnez une position à votre maison
+  dans Gladys, aux Pays-Bas, puis appuyez sur **Scanner**. Le statut de
+  l'écran Configuration dit pourquoi : aucune maison située, ou des maisons
+  hors des Pays-Bas.
+- **« Le service géographique du RIVM ne répond pas »** : le dernier avis
+  reste affiché ; l'intégration réessaie toutes les 10 minutes.
+- **Les noms des fonctionnalités sont dans la mauvaise langue** : ils sont
+  fixés à la création. Changez la langue, supprimez l'appareil et ajoutez-le
+  de nouveau (son historique est perdu).
+- Pour le détail, réglez `LOG_LEVEL=debug` et lisez les logs de
+  l'intégration.
+
+## Limites
+
+- Pays-Bas seulement ; l'avis est celui du code postal à 4 chiffres de la
+  maison.
+- Développée et testée avec les vraies données du RIVM, mais sans avis orange
+  ni rouge le jour du développement : ces cas sont testés sur des
+  enregistrements modifiés. Vos retours sont les bienvenus.
+- Le Stookwijzer est un avis. Certaines communes interdisent les feux de bois
+  en code orange ou rouge : vérifiez les règles locales.
+- Non affiliée au RIVM.
