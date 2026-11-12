@@ -33,7 +33,7 @@ Rat für eine gesunde Umwelt, deshalb hat das RIVM ihn bewusst weggelassen.
 
 ## Voraussetzungen
 
-- Gladys Assistant 5.1 oder neuer.
+- Gladys Assistant 5.3 oder neuer.
 - Ein Haus mit einem **Standort** in Gladys (Einstellungen, Zuhause, die Karte
   des Hauses), in den Niederlanden. Die Integration bittet bei der Installation
   um Zugriff auf den Standort deiner Häuser: Er dient nur dazu, das

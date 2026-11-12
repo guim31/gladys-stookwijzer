@@ -33,7 +33,7 @@ meilleur avis pour un environnement sain, le RIVM l'a donc volontairement
 
 ## Prérequis
 
-- Gladys Assistant 5.1 ou plus récent.
+- Gladys Assistant 5.3 ou plus récent.
 - Une maison avec une **position** dans Gladys (Paramètres, Maisons, la carte
   de la maison), aux Pays-Bas. L'intégration demande l'accès à la position de
   vos maisons à l'installation : elle ne sert qu'à trouver le code postal, et

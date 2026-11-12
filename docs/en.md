@@ -30,7 +30,7 @@ healthy environment, so the RIVM deliberately left it out.
 
 ## Requirements
 
-- Gladys Assistant 5.1 or later.
+- Gladys Assistant 5.3 or later.
 - A house with a **location** in Gladys (Settings, Houses, the map of the
   house), in the Netherlands. The integration asks for access to the location
   of your houses when you install it: it is only used to find the postcode
