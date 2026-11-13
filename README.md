@@ -42,7 +42,7 @@ code green on purpose.
 
 ## Requirements
 
-- Gladys Assistant **5.1.0** or later.
+- Gladys Assistant **5.3.0** or later.
 - A house with a location in Gladys, in the Netherlands. The integration asks
   for access to the location of your houses (manifest `location: true`).
 

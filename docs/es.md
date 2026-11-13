@@ -33,7 +33,7 @@ entorno sano, por eso el RIVM lo dejó fuera a propósito.
 
 ## Requisitos
 
-- Gladys Assistant 5.1 o posterior.
+- Gladys Assistant 5.3 o posterior.
 - Una casa con una **ubicación** en Gladys (Configuración, Viviendas, el mapa
   de la casa), en los Países Bajos. La integración solicita acceso a la
   ubicación de sus casas al instalarla: solo sirve para encontrar el código
