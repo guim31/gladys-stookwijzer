@@ -1,6 +1,6 @@
 {
   "name": "gladys-stookwijzer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Gladys Assistant integration: the RIVM Stookwijzer wood-burning advice (Netherlands) for each house.",
   "type": "module",

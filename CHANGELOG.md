@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-13
+
 ### Changed
 
 - Declared for the Netherlands only (`countries: ["NL"]`): the Gladys catalog of an
@@ -30,5 +32,6 @@ the notes of the version's GitHub Release.
 - Feature names, texts and documentation in English, French, German and
   Spanish.
 
-[Unreleased]: https://github.com/guim31/gladys-stookwijzer/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/guim31/gladys-stookwijzer/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-stookwijzer/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/guim31/gladys-stookwijzer/releases/tag/v1.0.0
